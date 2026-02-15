@@ -46,13 +46,15 @@
       setGitHubToken(token);
     }
 
-    const now = new Date(entry.savedAt);
-    const yearMonth = `${now.getFullYear()}-${pad(now.getMonth() + 1)}`;
+    // Use program broadcast date, not save date
+    const programDate = entry.programTime ? parseTime(entry.programTime) : new Date(entry.savedAt);
+    const yearMonth = `${programDate.getFullYear()}-${pad(programDate.getMonth() + 1)}`;
     const filePath = `logs/${yearMonth}.md`;
-    const day = now.getDate();
-    const month = now.getMonth() + 1;
-    const dayOfWeek = ['日', '月', '火', '水', '木', '金', '土'][now.getDay()];
-    const time = entry.savedAt.slice(11, 16);
+    const day = programDate.getDate();
+    const month = programDate.getMonth() + 1;
+    const dayOfWeek = ['日', '月', '火', '水', '木', '金', '土'][programDate.getDay()];
+    // Show program start time
+    const time = entry.programTime ? `${entry.programTime.slice(8,10)}:${entry.programTime.slice(10,12)}` : entry.savedAt.slice(11, 16);
 
     // Build entry markdown
     let entryMd = `### ${time} - ${entry.stationId} - ${entry.programTitle || '番組名不明'}\n\n`;
@@ -81,7 +83,7 @@
         sha = data.sha;
         content = decodeURIComponent(escape(atob(data.content.replace(/\n/g, ''))));
       } else {
-        content = `# ${now.getFullYear()}年${month}月\n\n`;
+        content = `# ${programDate.getFullYear()}年${month}月\n\n`;
       }
 
       // Add day section if needed
