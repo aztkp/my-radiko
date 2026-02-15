@@ -270,30 +270,54 @@
       return cachedProgramInfo;
     }
 
-    try {
-      // Extract date from programTime (YYYYMMDDHHMMSS)
-      const dateStr = programTime.slice(0, 8);
-
-      // Fetch program schedule from radiko API
-      const url = `https://radiko.jp/v3/program/station/date/${dateStr}/${stationId}.xml`;
-      const res = await fetch(url);
-      if (!res.ok) return '';
-
-      const text = await res.text();
-      const parser = new DOMParser();
-      const xml = parser.parseFromString(text, 'text/xml');
-
-      // Find the program that matches our time
+    // Helper to search programs in XML
+    const searchInXml = (xml) => {
       const programs = xml.querySelectorAll('prog');
       for (const prog of programs) {
-        const ft = prog.getAttribute('ft'); // from time
-        const to = prog.getAttribute('to'); // to time
+        const ft = prog.getAttribute('ft');
+        const to = prog.getAttribute('to');
         if (ft && to && programTime >= ft && programTime < to) {
           const titleEl = prog.querySelector('title');
-          const title = titleEl ? titleEl.textContent.trim() : '';
+          return titleEl ? titleEl.textContent.trim() : '';
+        }
+      }
+      return null;
+    };
+
+    try {
+      const dateStr = programTime.slice(0, 8);
+      const hour = parseInt(programTime.slice(8, 10));
+
+      // Try current date first
+      let url = `https://radiko.jp/v3/program/station/date/${dateStr}/${stationId}.xml`;
+      let res = await fetch(url);
+      if (res.ok) {
+        const text = await res.text();
+        const xml = new DOMParser().parseFromString(text, 'text/xml');
+        const title = searchInXml(xml);
+        if (title) {
           cachedProgramInfo = title;
           lastProgramFetch = now;
           return title;
+        }
+      }
+
+      // For early morning (00:00-05:00), try previous day's schedule
+      if (hour < 5) {
+        const d = parseTime(programTime);
+        d.setDate(d.getDate() - 1);
+        const prevDateStr = `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}`;
+        url = `https://radiko.jp/v3/program/station/date/${prevDateStr}/${stationId}.xml`;
+        res = await fetch(url);
+        if (res.ok) {
+          const text = await res.text();
+          const xml = new DOMParser().parseFromString(text, 'text/xml');
+          const title = searchInXml(xml);
+          if (title) {
+            cachedProgramInfo = title;
+            lastProgramFetch = now;
+            return title;
+          }
         }
       }
     } catch (e) {
