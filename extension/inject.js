@@ -137,6 +137,50 @@
     URL.revokeObjectURL(url);
   }
 
+  // File System Access API for direct folder writing
+  let logsDirHandle = null;
+
+  async function selectLogsFolder() {
+    try {
+      logsDirHandle = await window.showDirectoryPicker({
+        mode: 'readwrite'
+      });
+      showToast('フォルダ設定完了');
+      return true;
+    } catch (e) {
+      if (e.name !== 'AbortError') {
+        console.error('[RadikoSkip] Folder selection failed:', e);
+      }
+      return false;
+    }
+  }
+
+  async function writeToLogsFolder(filename, content) {
+    if (!logsDirHandle) {
+      const selected = await selectLogsFolder();
+      if (!selected) return false;
+    }
+
+    try {
+      // Request permission if needed
+      const permission = await logsDirHandle.requestPermission({ mode: 'readwrite' });
+      if (permission !== 'granted') {
+        showToast('権限がありません');
+        return false;
+      }
+
+      const fileHandle = await logsDirHandle.getFileHandle(filename, { create: true });
+      const writable = await fileHandle.createWritable();
+      await writable.write(content);
+      await writable.close();
+      return true;
+    } catch (e) {
+      console.error('[RadikoSkip] Write failed:', e);
+      logsDirHandle = null; // Reset on error
+      return false;
+    }
+  }
+
   function getCurrentPosition() {
     if (!window.player?._player?._audio || !window.player._fttm) return null;
     const audio = window.player._player._audio;
@@ -878,7 +922,7 @@
         <div class="rsk-memo-section">
           <input type="text" class="rsk-memo-input" id="rsk-memo" placeholder="メモを入力...">
           <button class="rsk-save-btn" id="rsk-save">保存</button>
-          <button class="rsk-export-btn" id="rsk-export">履歴</button>
+          <button class="rsk-export-btn" id="rsk-folder">📁</button>
         </div>
       </div>
     `;
@@ -990,14 +1034,39 @@
       updateDuration();
     }, 500);
 
+    // Folder select button
+    const folderBtn = document.getElementById('rsk-folder');
+    folderBtn.addEventListener('click', () => {
+      selectLogsFolder();
+    });
+
     // Save button
     const saveBtn = document.getElementById('rsk-save');
     const memoInput = document.getElementById('rsk-memo');
-    saveBtn.addEventListener('click', () => {
+    saveBtn.addEventListener('click', async () => {
       const memo = memoInput.value.trim();
-      saveListeningLog(memo);
+      const entry = saveListeningLog(memo);
       memoInput.value = '';
-      showToast('保存しました');
+
+      // Generate markdown for this entry's month
+      const yearMonth = entry.savedAt.slice(0, 7);
+      const files = exportLogsAsMarkdown();
+      const monthFile = files?.find(f => f.name === `${yearMonth}.md`);
+
+      if (monthFile && logsDirHandle) {
+        saveBtn.textContent = '...';
+        const success = await writeToLogsFolder(monthFile.name, monthFile.content);
+        saveBtn.textContent = '保存';
+        if (success) {
+          showToast('ファイル保存完了');
+        } else {
+          showToast('localStorage保存');
+        }
+      } else if (!logsDirHandle) {
+        showToast('📁でフォルダ選択');
+      } else {
+        showToast('保存しました');
+      }
     });
 
     // Enter key to save
@@ -1005,21 +1074,6 @@
       if (e.key === 'Enter') {
         saveBtn.click();
       }
-    });
-
-    // Export button
-    const exportBtn = document.getElementById('rsk-export');
-    exportBtn.addEventListener('click', () => {
-      const files = exportLogsAsMarkdown();
-      if (!files || files.length === 0) {
-        showToast('ログがありません');
-        return;
-      }
-      // Download each month file
-      files.forEach(file => {
-        downloadFile(file.content, file.name);
-      });
-      showToast(`${files.length}ファイル出力`);
     });
 
     // Update now-playing info every 2 seconds
