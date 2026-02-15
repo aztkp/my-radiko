@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "Radiko Skip",
+  "version": "1.0.0",
+  "description": "radikoでスキップ機能を追加",
+  "permissions": ["activeTab", "scripting", "storage"],
+  "host_permissions": ["https://radiko.jp/*"],
+  "content_scripts": [
+    {
+      "matches": ["https://radiko.jp/*"],
+      "js": ["inject.js"],
+      "run_at": "document_end",
+      "world": "MAIN"
+    }
+  ],
+  "commands": {
+    "skip-forward": {
+      "suggested_key": {
+        "default": "Alt+Period",
+        "mac": "MacCtrl+Period"
+      },
+      "description": "10秒進む"
+    },
+    "skip-backward": {
+      "suggested_key": {
+        "default": "Alt+Comma",
+        "mac": "MacCtrl+Comma"
+      },
+      "description": "10秒戻る"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}
