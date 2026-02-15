@@ -123,11 +123,134 @@
         throw new Error(err.message);
       }
 
+      // Update README calendar
+      await updateCalendar(token, programDate, entry.stationId);
+
       return true;
     } catch (e) {
       console.error('[RadikoSkip] GitHub error:', e);
       return false;
     }
+  }
+
+  async function updateCalendar(token, programDate, stationId) {
+    const year = programDate.getFullYear();
+    const month = programDate.getMonth() + 1;
+    const day = programDate.getDate();
+    const readmePath = 'logs/README.md';
+
+    try {
+      // Get current README
+      const getRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${readmePath}`, {
+        headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+      });
+
+      let content, sha;
+      if (getRes.ok) {
+        const data = await getRes.json();
+        sha = data.sha;
+        content = decodeURIComponent(escape(atob(data.content.replace(/\n/g, ''))));
+      } else {
+        content = '# Radiko 聴取ログ\n\n';
+      }
+
+      // Check if this month's calendar exists
+      const monthHeader = `## ${year}年${month}月`;
+      if (!content.includes(monthHeader)) {
+        // Generate new calendar for this month
+        const cal = generateCalendar(year, month);
+        // Insert after title
+        const insertPos = content.indexOf('\n\n') + 2;
+        content = content.slice(0, insertPos) + monthHeader + '\n\n' + cal + '\n\n---\n\n' + content.slice(insertPos);
+      }
+
+      // Update the day cell with station info
+      const yearMonth = `${year}-${pad(month)}`;
+      const dayStr = String(day);
+
+      // Pattern to find the day cell (handles both linked and unlinked)
+      // Day cell could be: "| 11 |" or "| [11 TBS](link) |" or "| [11](link) TBS |"
+      const cellPatterns = [
+        // Already has link with content: [11 XXX](...)
+        new RegExp(`\\[${dayStr}[^\\]]*\\]\\(${yearMonth}\\.md#${month}${day}\\)`, 'g'),
+        // Plain day number
+        new RegExp(`\\| ${dayStr} \\|`, 'g'),
+        // Day at end of row
+        new RegExp(`\\| ${dayStr} \\|$`, 'gm')
+      ];
+
+      // Check if already has this station
+      if (content.includes(`[${dayStr}`) && content.includes(`${yearMonth}.md#${month}${day}`)) {
+        // Update existing link - add station if not present
+        const linkRegex = new RegExp(`\\[${dayStr}([^\\]]*)\\]\\(${yearMonth}\\.md#${month}${day}\\)`, 'g');
+        const match = linkRegex.exec(content);
+        if (match) {
+          const existing = match[1].trim();
+          if (!existing.includes(stationId)) {
+            const newStations = existing ? `${existing},${stationId}` : ` ${stationId}`;
+            content = content.replace(match[0], `[${dayStr}${newStations}](${yearMonth}.md#${month}${day})`);
+          }
+        }
+      } else {
+        // Add new link
+        const plainDayRegex = new RegExp(`(\\| )${dayStr}( \\|)`, 'g');
+        content = content.replace(plainDayRegex, `$1[${dayStr} ${stationId}](${yearMonth}.md#${month}${day})$2`);
+      }
+
+      // Commit updated README
+      const putRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${readmePath}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `token ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message: `📅 Update calendar: ${month}/${day} ${stationId}`,
+          content: btoa(unescape(encodeURIComponent(content))),
+          sha: sha
+        })
+      });
+
+      return putRes.ok;
+    } catch (e) {
+      console.error('[RadikoSkip] Calendar update error:', e);
+      return false;
+    }
+  }
+
+  function generateCalendar(year, month) {
+    const firstDay = new Date(year, month - 1, 1).getDay(); // 0=Sun
+    const lastDate = new Date(year, month, 0).getDate();
+
+    let cal = '| 日 | 月 | 火 | 水 | 木 | 金 | 土 |\n';
+    cal += '|:--:|:--:|:--:|:--:|:--:|:--:|:--:|\n';
+
+    let row = '|';
+    // Empty cells before first day
+    for (let i = 0; i < firstDay; i++) {
+      row += '  |';
+    }
+
+    for (let d = 1; d <= lastDate; d++) {
+      row += ` ${d} |`;
+      if ((firstDay + d) % 7 === 0) {
+        cal += row + '\n';
+        row = '|';
+      }
+    }
+
+    // Fill remaining cells
+    if (row !== '|') {
+      const remaining = 7 - ((firstDay + lastDate) % 7);
+      if (remaining < 7) {
+        for (let i = 0; i < remaining; i++) {
+          row += '  |';
+        }
+      }
+      cal += row;
+    }
+
+    return cal.trim();
   }
 
   function getCurrentProgramInfo() {
