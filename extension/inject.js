@@ -269,16 +269,19 @@
     return cal.trim();
   }
 
-  // Cache for program info
+  // Cache for program info (keyed by station + time)
   let cachedProgramInfo = null;
+  let cachedProgramKey = '';
   let lastProgramFetch = 0;
 
   async function fetchProgramTitle(stationId, programTime) {
     if (!stationId || !programTime) return '';
 
-    // Use cache if recent
+    const cacheKey = `${stationId}_${programTime}`;
     const now = Date.now();
-    if (cachedProgramInfo && now - lastProgramFetch < 60000) {
+
+    // Use cache only if same program and recent
+    if (cachedProgramInfo && cachedProgramKey === cacheKey && now - lastProgramFetch < 60000) {
       return cachedProgramInfo;
     }
 
@@ -309,6 +312,7 @@
         const title = searchInXml(xml);
         if (title) {
           cachedProgramInfo = title;
+          cachedProgramKey = cacheKey;
           lastProgramFetch = now;
           return title;
         }
@@ -327,6 +331,7 @@
           const title = searchInXml(xml);
           if (title) {
             cachedProgramInfo = title;
+            cachedProgramKey = cacheKey;
             lastProgramFetch = now;
             return title;
           }
@@ -1290,10 +1295,13 @@
     window.addEventListener('hashchange', () => {
       document.querySelector('.rsk-float')?.remove();
       window.__rskLastSeek = null;
-      // Reset song cache
+      // Reset all caches on page change
       cachedSongs = [];
       lastFetchTime = 0;
       lastSongTitle = '';
+      cachedProgramInfo = null;
+      cachedProgramKey = '';
+      lastProgramFetch = 0;
       setTimeout(tryAdd, 500);
     });
   }
