@@ -123,8 +123,9 @@
         throw new Error(err.message);
       }
 
-      // Update README calendar
-      await updateCalendar(token, programDate, entry.stationId);
+      // Update README calendar with program title
+      const displayTitle = entry.programTitle || entry.stationId;
+      await updateCalendar(token, programDate, displayTitle);
 
       return true;
     } catch (e) {
@@ -133,12 +134,14 @@
     }
   }
 
-  async function updateCalendar(token, programDate, stationId) {
+  async function updateCalendar(token, programDate, programTitle) {
     const year = programDate.getFullYear();
     const month = programDate.getMonth() + 1;
     const day = programDate.getDate();
     const yearMonth = `${year}-${pad(month)}`;
     const dayStr = String(day);
+    // Shorten long titles for calendar display
+    const shortTitle = programTitle.length > 15 ? programTitle.slice(0, 14) + '…' : programTitle;
 
     // Update both logs/README.md and root README.md
     const updates = [
@@ -177,25 +180,25 @@
           }
         }
 
-        // Update the day cell with station info
+        // Update the day cell with program title
         const linkPath = `${linkPrefix}${yearMonth}.md#${month}${day}`;
 
-        // Check if already has this station
+        // Check if already has a link for this day
         if (content.includes(`[${dayStr}`) && content.includes(linkPath)) {
-          // Update existing link - add station if not present
+          // Update existing link - add program if not present
           const linkRegex = new RegExp(`\\[${dayStr}([^\\]]*)\\]\\(${linkPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\)`, 'g');
           const match = linkRegex.exec(content);
           if (match) {
             const existing = match[1].trim();
-            if (!existing.includes(stationId)) {
-              const newStations = existing ? `${existing},${stationId}` : ` ${stationId}`;
-              content = content.replace(match[0], `[${dayStr}${newStations}](${linkPath})`);
+            if (!existing.includes(shortTitle)) {
+              const newPrograms = existing ? `${existing}, ${shortTitle}` : ` ${shortTitle}`;
+              content = content.replace(match[0], `[${dayStr}${newPrograms}](${linkPath})`);
             }
           }
         } else {
           // Add new link
           const plainDayRegex = new RegExp(`(\\| )${dayStr}( \\|)`, 'g');
-          content = content.replace(plainDayRegex, `$1[${dayStr} ${stationId}](${linkPath})$2`);
+          content = content.replace(plainDayRegex, `$1[${dayStr} ${shortTitle}](${linkPath})$2`);
         }
 
         // Commit updated README
@@ -206,7 +209,7 @@
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            message: `📅 Update calendar: ${month}/${day} ${stationId}`,
+            message: `📅 ${month}/${day} ${shortTitle}`,
             content: btoa(unescape(encodeURIComponent(content))),
             sha: sha
           })
