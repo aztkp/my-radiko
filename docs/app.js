@@ -771,7 +771,7 @@
               <div class="shelf-item" data-idx="${item.idx}">
                 ${item.image
                   ? `<img class="shelf-cover" src="${item.image}" alt="${item.title}">`
-                  : `<div class="shelf-cover shelf-placeholder">${MEDIA_EMOJI[item.type]}</div>`
+                  : `<div class="shelf-cover shelf-placeholder"><span class="placeholder-emoji">${MEDIA_EMOJI[item.type]}</span><span class="placeholder-text">${MEDIA_NAMES[item.type] || ''}</span></div>`
                 }
                 <div class="shelf-title">${item.title}</div>
                 <div class="shelf-actions">

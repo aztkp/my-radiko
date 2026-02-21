@@ -772,9 +772,19 @@
     .shelf-placeholder {
       background: var(--bg-tertiary);
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      font-size: 32px;
+      gap: 4px;
+    }
+
+    .placeholder-emoji {
+      font-size: 28px;
+    }
+
+    .placeholder-text {
+      font-size: 11px;
+      color: var(--text-muted);
     }
 
     .shelf-title {
