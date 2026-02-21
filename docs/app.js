@@ -81,11 +81,22 @@
     }
   }
 
-  async function saveData(retry = true) {
+  async function saveData() {
     const token = getToken();
     if (!token || !scheduleData) return false;
 
     try {
+      // Always get latest SHA before saving to avoid conflicts
+      if (!scheduleSha) {
+        const latest = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/schedule.json`, {
+          headers: { 'Authorization': `token ${token}` }
+        });
+        if (latest.ok) {
+          const latestData = await latest.json();
+          scheduleSha = latestData.sha;
+        }
+      }
+
       const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/schedule.json`, {
         method: 'PUT',
         headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
@@ -96,8 +107,8 @@
         })
       });
 
-      if (res.status === 409 && retry) {
-        // SHA conflict - fetch latest and retry
+      if (res.status === 409) {
+        // SHA conflict - fetch latest and retry once
         console.log('SHA conflict, fetching latest...');
         const latest = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/schedule.json`, {
           headers: { 'Authorization': `token ${token}` }
@@ -105,7 +116,22 @@
         if (latest.ok) {
           const latestData = await latest.json();
           scheduleSha = latestData.sha;
-          return saveData(false);
+          // Retry once
+          const retry = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/schedule.json`, {
+            method: 'PUT',
+            headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              message: '📊 Update media log',
+              content: b64encode(JSON.stringify(scheduleData, null, 2)),
+              sha: scheduleSha
+            })
+          });
+          if (retry.ok) {
+            const data = await retry.json();
+            scheduleSha = data.content.sha;
+            showToast('保存しました');
+            return true;
+          }
         }
       }
 
