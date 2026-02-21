@@ -169,6 +169,9 @@
       font-weight: 600;
       margin-bottom: 8px;
       color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
     .day-card.today .day-card-header {
@@ -187,6 +190,36 @@
     }
 
     .day-show-name { flex: 1; }
+
+    .day-show-actions {
+      display: flex;
+      gap: 2px;
+    }
+
+    .day-move-btn, .day-del-btn, .day-add-btn {
+      background: var(--bg-tertiary);
+      border: none;
+      color: var(--text-secondary);
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .day-move-btn:hover, .day-add-btn:hover { background: var(--accent); color: #fff; }
+    .day-del-btn:hover { background: var(--danger); color: #fff; }
+    .day-move-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .day-move-btn:disabled:hover { background: var(--bg-tertiary); color: var(--text-secondary); }
+
+    .day-add-btn {
+      margin-left: auto;
+      font-size: 14px;
+      font-weight: bold;
+    }
 
     .day-empty {
       font-size: 11px;
@@ -443,6 +476,57 @@
       border-radius: 3px;
     }
 
+    /* GitHub-style contribution graph */
+    .contrib-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .contrib-row {
+      background: var(--bg-secondary);
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .contrib-label {
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .contrib-count {
+      font-size: 11px;
+      color: var(--text-muted);
+      background: var(--bg-tertiary);
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+
+    .contrib-squares {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .contrib-square {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      background: var(--bg-tertiary);
+    }
+
+    .contrib-square.movie { background: #e91e63; }
+    .contrib-square.anime { background: #9c27b0; }
+    .contrib-square.drama { background: #3f51b5; }
+    .contrib-square.game { background: #00bcd4; }
+    .contrib-square.book { background: #8bc34a; }
+    .contrib-square.manga { background: #ff9800; }
+    .contrib-square.youtube { background: #f44336; }
+
     /* Stats */
     .stats-row {
       display: flex;
@@ -598,7 +682,7 @@
       </div>
 
       <!-- Weekly Calendar -->
-      <div class="section-title">📻 今週のラジオ</div>
+      <div class="section-title">📻 今週のラジオ <button class="btn btn-sm" id="btn-edit-weekly">✏️ 編集</button></div>
       <div class="weekly-calendar" id="weekly-calendar"></div>
 
       <!-- Stats -->

@@ -107,6 +107,8 @@
   }
 
   // Weekly Calendar
+  let editingWeekly = false;
+
   function renderWeeklyCalendar() {
     const container = document.getElementById('weekly-calendar');
     if (!container) return;
@@ -118,18 +120,104 @@
       const isToday = day === today;
 
       html += `<div class="day-card ${isToday ? 'today' : ''}">
-        <div class="day-card-header">${DAY_NAMES[day]}${isToday ? ' (今日)' : ''}</div>
+        <div class="day-card-header">
+          ${DAY_NAMES[day]}${isToday ? ' (今日)' : ''}
+          ${editingWeekly ? `<button class="day-add-btn" data-day="${day}" title="追加">+</button>` : ''}
+        </div>
         ${shows.length === 0 ? '<div class="day-empty">-</div>' : ''}
-        ${shows.map(s => `
+        ${shows.map((s, i) => `
           <div class="day-show">
             <span>${MEDIA_EMOJI[s.type] || '📻'}</span>
             <span class="day-show-name">${s.name}</span>
+            ${editingWeekly ? `
+              <span class="day-show-actions">
+                <button class="day-move-btn" data-day="${day}" data-idx="${i}" data-dir="up" ${i === 0 ? 'disabled' : ''}>▲</button>
+                <button class="day-move-btn" data-day="${day}" data-idx="${i}" data-dir="down" ${i === shows.length - 1 ? 'disabled' : ''}>▼</button>
+                <button class="day-del-btn" data-day="${day}" data-idx="${i}">×</button>
+              </span>
+            ` : ''}
           </div>
         `).join('')}
       </div>`;
     });
 
     container.innerHTML = html;
+
+    if (editingWeekly) {
+      attachWeeklyEvents(container);
+    }
+  }
+
+  function attachWeeklyEvents(container) {
+    container.querySelectorAll('.day-add-btn').forEach(btn => {
+      btn.addEventListener('click', () => openAddRadioModal(btn.dataset.day));
+    });
+
+    container.querySelectorAll('.day-move-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const day = btn.dataset.day;
+        const idx = parseInt(btn.dataset.idx);
+        const dir = btn.dataset.dir;
+        const shows = scheduleData.weekly[day];
+
+        if (dir === 'up' && idx > 0) {
+          [shows[idx - 1], shows[idx]] = [shows[idx], shows[idx - 1]];
+        } else if (dir === 'down' && idx < shows.length - 1) {
+          [shows[idx], shows[idx + 1]] = [shows[idx + 1], shows[idx]];
+        }
+        await saveData();
+        renderWeeklyCalendar();
+      });
+    });
+
+    container.querySelectorAll('.day-del-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const day = btn.dataset.day;
+        const idx = parseInt(btn.dataset.idx);
+        const show = scheduleData.weekly[day][idx];
+        if (!confirm(`「${show.name}」を削除しますか？`)) return;
+        scheduleData.weekly[day].splice(idx, 1);
+        await saveData();
+        renderWeeklyCalendar();
+      });
+    });
+  }
+
+  function openAddRadioModal(day) {
+    const modal = document.getElementById('edit-modal');
+    const content = document.getElementById('modal-content');
+
+    content.innerHTML = `
+      <div class="form-group">
+        <label class="form-label">番組名</label>
+        <input type="text" class="form-input" id="add-radio-name" placeholder="番組名を入力">
+      </div>
+      <div class="form-group">
+        <label class="form-label">種類</label>
+        <select class="form-select" id="add-radio-type">
+          <option value="radio">📻 ラジオ</option>
+          <option value="tv">📺 テレビ</option>
+          <option value="streaming">🎧 配信</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" id="add-radio-save" style="width:100%;margin-top:12px;">追加</button>
+    `;
+
+    modal.classList.add('show');
+
+    document.getElementById('add-radio-save').addEventListener('click', async () => {
+      const name = document.getElementById('add-radio-name').value.trim();
+      const type = document.getElementById('add-radio-type').value;
+      if (!name) return;
+
+      if (!scheduleData.weekly[day]) scheduleData.weekly[day] = [];
+      scheduleData.weekly[day].push({ name, type });
+
+      await saveData();
+      modal.classList.remove('show');
+      renderWeeklyCalendar();
+      showToast('追加しました');
+    });
   }
 
   // Stats
@@ -305,6 +393,8 @@
     const modal = document.getElementById('edit-modal');
     const content = document.getElementById('modal-content');
 
+    const completedDate = item.completedAt ? item.completedAt.split('T')[0] : '';
+
     content.innerHTML = `
       <div class="form-group">
         <label class="form-label">タイトル</label>
@@ -327,6 +417,10 @@
           <option value="hold" ${item.status === 'hold' ? 'selected' : ''}>⏸ 保留</option>
         </select>
       </div>
+      <div class="form-group" id="edit-date-group" style="${item.status === 'done' ? '' : 'display:none'}">
+        <label class="form-label">完了日</label>
+        <input type="date" class="form-input" id="edit-date" value="${completedDate}">
+      </div>
       <div class="form-group">
         <label class="form-label">メモ</label>
         <textarea class="form-textarea" id="edit-note">${item.note || ''}</textarea>
@@ -336,17 +430,35 @@
 
     modal.classList.add('show');
 
+    document.getElementById('edit-status').addEventListener('change', (e) => {
+      const dateGroup = document.getElementById('edit-date-group');
+      if (e.target.value === 'done') {
+        dateGroup.style.display = '';
+        if (!document.getElementById('edit-date').value) {
+          document.getElementById('edit-date').value = new Date().toISOString().split('T')[0];
+        }
+      } else {
+        dateGroup.style.display = 'none';
+      }
+    });
+
     document.getElementById('edit-save').addEventListener('click', async () => {
       item.title = document.getElementById('edit-title').value.trim();
       item.type = document.getElementById('edit-type').value;
-      item.status = document.getElementById('edit-status').value;
+      const newStatus = document.getElementById('edit-status').value;
       item.note = document.getElementById('edit-note').value.trim() || undefined;
 
-      if (item.status === 'done' && !item.completedAt) {
-        item.completedAt = new Date().toISOString();
-      } else if (item.status !== 'done') {
+      if (newStatus === 'done') {
+        const dateVal = document.getElementById('edit-date').value;
+        if (dateVal) {
+          item.completedAt = new Date(dateVal).toISOString();
+        } else if (!item.completedAt) {
+          item.completedAt = new Date().toISOString();
+        }
+      } else {
         delete item.completedAt;
       }
+      item.status = newStatus;
 
       await saveData();
       modal.classList.remove('show');
@@ -373,38 +485,32 @@
       return;
     }
 
-    // Render stacked bar visualization
+    // Render GitHub-style contribution graph per category
     if (vizContainer) {
       const byType = {};
       doneItems.forEach(item => {
         const type = item.type || 'movie';
-        byType[type] = (byType[type] || 0) + 1;
+        if (!byType[type]) byType[type] = [];
+        byType[type].push(item);
       });
 
-      const total = doneItems.length;
       const categoryOrder = ['movie', 'anime', 'drama', 'game', 'book', 'manga', 'youtube'];
-      const typeLabels = { movie: '映画', anime: 'アニメ', drama: 'ドラマ', game: 'ゲーム', book: '本', manga: '漫画', youtube: 'YouTube' };
 
-      let barHtml = '<div class="stack-bar">';
+      let html = '<div class="contrib-grid">';
       categoryOrder.forEach(type => {
-        const count = byType[type] || 0;
-        if (count > 0) {
-          const pct = (count / total * 100).toFixed(1);
-          barHtml += `<div class="stack-segment ${type}" style="flex: ${count};" title="${typeLabels[type]}: ${count}">${count}</div>`;
-        }
-      });
-      barHtml += '</div>';
+        const items = byType[type] || [];
+        if (items.length === 0) return;
 
-      barHtml += '<div class="stack-legend">';
-      categoryOrder.forEach(type => {
-        const count = byType[type] || 0;
-        if (count > 0) {
-          barHtml += `<div class="stack-legend-item"><div class="stack-legend-color ${type}"></div>${MEDIA_EMOJI[type]} ${count}</div>`;
-        }
+        html += `<div class="contrib-row">
+          <div class="contrib-label">${MEDIA_EMOJI[type]} ${MEDIA_NAMES[type]} <span class="contrib-count">${items.length}</span></div>
+          <div class="contrib-squares">
+            ${items.map(() => `<div class="contrib-square ${type}"></div>`).join('')}
+          </div>
+        </div>`;
       });
-      barHtml += '</div>';
+      html += '</div>';
 
-      vizContainer.innerHTML = barHtml;
+      vizContainer.innerHTML = html;
     }
 
     // Group by date
@@ -585,6 +691,15 @@
 
     // Refresh
     document.getElementById('btn-refresh')?.addEventListener('click', loadData);
+
+    // Weekly edit toggle
+    document.getElementById('btn-edit-weekly')?.addEventListener('click', () => {
+      editingWeekly = !editingWeekly;
+      const btn = document.getElementById('btn-edit-weekly');
+      btn.textContent = editingWeekly ? '✓ 完了' : '✏️ 編集';
+      btn.classList.toggle('btn-primary', editingWeekly);
+      renderWeeklyCalendar();
+    });
 
     // Load
     await loadData();
