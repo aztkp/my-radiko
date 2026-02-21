@@ -751,38 +751,18 @@
     let html = '';
 
     if (historyViewMode === 'shelf') {
-      // Shelf view - grouped by category with images
-      const byType = {};
-      doneItems.forEach(item => {
-        const type = item.type || 'movie';
-        if (!byType[type]) byType[type] = [];
-        byType[type].push(item);
-      });
-
-      const categoryOrder = ['movie', 'anime', 'drama', 'game', 'book', 'manga'];
-      categoryOrder.forEach(type => {
-        const items = byType[type] || [];
-        if (items.length === 0) return;
-
-        html += `<div class="shelf-section">
-          <div class="shelf-header">${MEDIA_EMOJI[type]} ${MEDIA_NAMES[type]}</div>
-          <div class="shelf-grid">
-            ${items.map(item => `
-              <div class="shelf-item" data-idx="${item.idx}">
-                ${item.image
-                  ? `<img class="shelf-cover" src="${item.image}" alt="${item.title}">`
-                  : `<div class="shelf-cover shelf-placeholder"><span class="placeholder-emoji">${MEDIA_EMOJI[item.type]}</span><span class="placeholder-text">${MEDIA_NAMES[item.type] || ''}</span></div>`
-                }
-                <div class="shelf-title">${item.title}</div>
-                <div class="shelf-actions">
-                  <button class="btn btn-sm" data-idx="${item.idx}" data-action="edit-history">✏️</button>
-                  <button class="btn btn-sm btn-danger" data-idx="${item.idx}" data-action="delete-history">🗑️</button>
-                </div>
-              </div>
-            `).join('')}
+      // Shelf view - simple tile grid
+      html += `<div class="shelf-grid">
+        ${doneItems.map(item => `
+          <div class="shelf-item" data-idx="${item.idx}">
+            ${item.image
+              ? `<img class="shelf-cover" src="${item.image}" alt="${item.title}">`
+              : `<div class="shelf-cover shelf-placeholder"><span class="placeholder-emoji">${MEDIA_EMOJI[item.type]}</span></div>`
+            }
+            <div class="shelf-title">${item.title}</div>
           </div>
-        </div>`;
-      });
+        `).join('')}
+      </div>`;
     } else {
       // List view - grouped by date
       const grouped = {};
@@ -828,6 +808,11 @@
 
     container.querySelectorAll('[data-action="delete-history"]').forEach(btn => {
       btn.addEventListener('click', () => deleteHistoryItem(parseInt(btn.dataset.idx)));
+    });
+
+    // Shelf item click to edit
+    container.querySelectorAll('.shelf-item').forEach(item => {
+      item.addEventListener('click', () => openEditModal(parseInt(item.dataset.idx)));
     });
   }
 
