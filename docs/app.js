@@ -21,7 +21,6 @@
 
   let scheduleData = null;
   let scheduleSha = null;
-  let currentBacklogFilter = 'all';
   let currentAllFilter = 'all';
 
   // Utils
@@ -186,36 +185,81 @@
     const container = document.getElementById('backlog-content');
     if (!container) return;
 
-    let items = scheduleData.watchlist
+    const items = scheduleData.watchlist
       .map((item, idx) => ({ ...item, idx }))
       .filter(i => i.status === 'want' || i.status === 'watching');
-
-    if (currentBacklogFilter !== 'all') {
-      items = items.filter(i => i.type === currentBacklogFilter);
-    }
 
     if (items.length === 0) {
       container.innerHTML = '<div class="empty">バックログは空です</div>';
       return;
     }
 
-    container.innerHTML = items.map(item => `
-      <div class="backlog-item">
+    // Separate watching (priority) items
+    const watching = items.filter(i => i.status === 'watching');
+    const want = items.filter(i => i.status === 'want');
+
+    // Group want items by category
+    const grouped = {};
+    want.forEach(item => {
+      const type = item.type || 'movie';
+      if (!grouped[type]) grouped[type] = [];
+      grouped[type].push(item);
+    });
+
+    let html = '';
+
+    // Priority section (watching)
+    if (watching.length > 0) {
+      html += `
+        <div class="priority-section">
+          <div class="section-title">📺 視聴中・優先</div>
+          <div class="category-items">
+            ${watching.map(item => renderBacklogItem(item, true)).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // Category sections
+    const categoryOrder = ['movie', 'anime', 'drama', 'game', 'book', 'manga', 'youtube'];
+    categoryOrder.forEach(type => {
+      const typeItems = grouped[type];
+      if (!typeItems || typeItems.length === 0) return;
+
+      html += `
+        <div class="category-section">
+          <div class="category-header">
+            <span class="category-emoji">${MEDIA_EMOJI[type]}</span>
+            <span class="category-name">${MEDIA_NAMES[type]}</span>
+            <span class="category-count">${typeItems.length}件</span>
+          </div>
+          <div class="category-items">
+            ${typeItems.map(item => renderBacklogItem(item, false)).join('')}
+          </div>
+        </div>
+      `;
+    });
+
+    container.innerHTML = html;
+    attachItemEvents(container);
+  }
+
+  function renderBacklogItem(item, isWatching) {
+    return `
+      <div class="backlog-item ${isWatching ? 'watching' : ''}">
         <button class="backlog-item-status" data-idx="${item.idx}" title="ステータス変更">
           ${STATUS_EMOJI[item.status] || '👀'}
         </button>
         <div class="backlog-item-content">
           <div class="backlog-item-title">${item.title}</div>
-          <div class="backlog-item-meta">${MEDIA_EMOJI[item.type]} ${MEDIA_NAMES[item.type] || ''}</div>
+          ${!isWatching ? '' : `<div class="backlog-item-meta">${MEDIA_EMOJI[item.type]} ${MEDIA_NAMES[item.type] || ''}</div>`}
         </div>
         <div class="backlog-item-actions">
           <button class="btn btn-sm" data-idx="${item.idx}" data-action="edit">✏️</button>
           <button class="btn btn-sm" data-idx="${item.idx}" data-action="delete">×</button>
         </div>
       </div>
-    `).join('');
-
-    attachItemEvents(container);
+    `;
   }
 
   function attachItemEvents(container) {
@@ -432,15 +476,6 @@
       });
     });
 
-    // Backlog filters
-    document.querySelectorAll('#backlog-filters .filter-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('#backlog-filters .filter-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        currentBacklogFilter = btn.dataset.filter;
-        renderBacklog();
-      });
-    });
 
     // All list filters
     document.querySelectorAll('#all-filters .filter-btn').forEach(btn => {
