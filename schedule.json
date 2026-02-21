@@ -1,0 +1,48 @@
+{
+  "weekly": {
+    "mon": [],
+    "tue": [
+      { "name": "爆笑問題カーボーイ", "type": "radio" }
+    ],
+    "wed": [],
+    "thu": [
+      { "name": "ハライチのターン!", "type": "radio" }
+    ],
+    "fri": [
+      { "name": "アルコ＆ピース D.C.GARAGE", "type": "radio" }
+    ],
+    "sat": [],
+    "sun": []
+  },
+  "watchlist": [
+    { "title": "ひゃくえむ", "type": "movie", "status": "done", "completedAt": "2026-01-15T00:00:00Z", "note": "友人とのスポ根かと思ったら意外と現実的なのがテーマだった。人生、でもその割には時間短すぎるな。最後の終わり方好き、君の名はもこう合ってほしかった。結末を書かないのは、結末がどうでもいいから。ロトスコープ：現実をトレース" },
+    { "title": "パプリカ", "type": "movie", "status": "done", "completedAt": "2026-01-15T00:00:00Z" },
+    { "title": "Perfect Blue", "type": "movie", "status": "want" },
+    { "title": "バック・トゥ・ザ・フューチャー", "type": "movie", "status": "want" },
+    { "title": "時をかける少女", "type": "movie", "status": "want" },
+    { "title": "線メリ", "type": "movie", "status": "want" },
+    { "title": "ネムルバカ", "type": "movie", "status": "want" },
+    { "title": "ジョーカー", "type": "movie", "status": "want" },
+    { "title": "秒速5センチメートル", "type": "movie", "status": "want" },
+    { "title": "ジョジョ2部まで", "type": "anime", "status": "done", "completedAt": "2026-01-15T00:00:00Z", "note": "リサリサ先生、タバコ逆だぜ。ジョースター軽いけどかっっこよくていいな" },
+    { "title": "フリーレン", "type": "anime", "status": "want" },
+    { "title": "スキップとローファー", "type": "anime", "status": "want" },
+    { "title": "かぐや様", "type": "anime", "status": "want" },
+    { "title": "タコピー", "type": "anime", "status": "want" },
+    { "title": "イカゲーム", "type": "drama", "status": "want" },
+    { "title": "VIVANT", "type": "drama", "status": "want" },
+    { "title": "ストレンジャー・シングス", "type": "drama", "status": "want" },
+    { "title": "未解決事件は終わらせないといけない", "type": "game", "status": "done", "completedAt": "2026-01-15T00:00:00Z" },
+    { "title": "ファイナルファンタジー", "type": "game", "status": "want" },
+    { "title": "サイレントヒル", "type": "game", "status": "want" },
+    { "title": "スマブラ", "type": "game", "status": "want" },
+    { "title": "虚弱", "type": "book", "status": "done", "completedAt": "2026-01-15T00:00:00Z", "note": "つまんな、！、！" },
+    { "title": "川端康成『名人』", "type": "book", "status": "done", "completedAt": "2026-01-15T00:00:00Z" },
+    { "title": "横光利一『日輪・春は馬車に乗って』", "type": "book", "status": "want" },
+    { "title": "おきはい", "type": "book", "status": "want" },
+    { "title": "ペルソナ", "type": "manga", "status": "want" },
+    { "title": "スラムダンク", "type": "manga", "status": "want" },
+    { "title": "I.ADORE", "type": "youtube", "status": "done", "completedAt": "2026-01-15T00:00:00Z", "url": "https://www.youtube.com/watch?v=h0_rLnhS8WI" },
+    { "title": "インテイクの30分トーク", "type": "youtube", "status": "want", "note": "めっちゃいい奴" }
+  ]
+}
