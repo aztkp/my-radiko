@@ -543,6 +543,29 @@
       margin-bottom: 20px;
     }
 
+    .contrib-compact {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .contrib-chip {
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #fff;
+    }
+
+    .contrib-chip.movie { background: #e91e63; }
+    .contrib-chip.anime { background: #9c27b0; }
+    .contrib-chip.drama { background: #3f51b5; }
+    .contrib-chip.game { background: #00bcd4; }
+    .contrib-chip.book { background: #8bc34a; }
+    .contrib-chip.manga { background: #ff9800; }
+    .contrib-chip.radio { background: #607d8b; }
+
     .contrib-row {
       background: var(--bg-secondary);
       border-radius: 8px;
@@ -969,7 +992,7 @@
 
     <!-- History Tab -->
     <div id="tab-history" class="tab-content">
-      <div class="stats-row" id="history-stats"></div>
+      <div id="history-contrib"></div>
       <div class="history-view-toggle">
         <button class="btn btn-sm active" id="btn-view-list">📋 タイムライン</button>
         <button class="btn btn-sm" id="btn-view-shelf">📚 本棚</button>

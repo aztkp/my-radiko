@@ -546,20 +546,6 @@
         </div>
       `;
     }
-
-    const historyStats = document.getElementById('history-stats');
-    if (historyStats) {
-      historyStats.innerHTML = `
-        <div class="stat-card">
-          <div class="stat-value">${yearDone.length}</div>
-          <div class="stat-label">${year}年の完了</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value">${monthDone.length}</div>
-          <div class="stat-label">${month + 1}月の完了</div>
-        </div>
-      `;
-    }
   }
 
   // Backlog
@@ -906,12 +892,36 @@
     if (!scheduleData) return;
 
     const container = document.getElementById('history-content');
+    const contribContainer = document.getElementById('history-contrib');
     if (!container) return;
 
     const doneItems = scheduleData.watchlist
       .map((item, idx) => ({ ...item, idx }))
       .filter(i => i.status === 'done' && i.completedAt)
       .sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt));
+
+    // Render compact contrib graph
+    if (contribContainer) {
+      if (doneItems.length === 0) {
+        contribContainer.innerHTML = '';
+      } else {
+        const byType = {};
+        doneItems.forEach(item => {
+          const type = item.type || 'movie';
+          byType[type] = (byType[type] || 0) + 1;
+        });
+
+        const categoryOrder = ['movie', 'anime', 'drama', 'game', 'book', 'manga', 'radio'];
+        let contribHtml = '<div class="contrib-compact">';
+        categoryOrder.forEach(type => {
+          const count = byType[type] || 0;
+          if (count === 0) return;
+          contribHtml += `<span class="contrib-chip ${type}">${MEDIA_EMOJI[type]} ${count}</span>`;
+        });
+        contribHtml += '</div>';
+        contribContainer.innerHTML = contribHtml;
+      }
+    }
 
     if (doneItems.length === 0) {
       container.innerHTML = '<div class="empty">まだ記録がありません</div>';
