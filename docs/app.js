@@ -81,7 +81,7 @@
     }
   }
 
-  async function saveData() {
+  async function saveData(retry = true) {
     const token = getToken();
     if (!token || !scheduleData) return false;
 
@@ -95,12 +95,31 @@
           sha: scheduleSha
         })
       });
-      if (!res.ok) throw new Error('Failed');
+
+      if (res.status === 409 && retry) {
+        // SHA conflict - fetch latest and retry
+        console.log('SHA conflict, fetching latest...');
+        const latest = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/schedule.json`, {
+          headers: { 'Authorization': `token ${token}` }
+        });
+        if (latest.ok) {
+          const latestData = await latest.json();
+          scheduleSha = latestData.sha;
+          return saveData(false);
+        }
+      }
+
+      if (!res.ok) {
+        console.error('Save failed:', res.status, await res.text());
+        throw new Error('Failed');
+      }
+
       const data = await res.json();
       scheduleSha = data.content.sha;
       showToast('保存しました');
       return true;
     } catch (e) {
+      console.error('Save error:', e);
       showToast('保存に失敗しました', 'error');
       return false;
     }
