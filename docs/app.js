@@ -359,20 +359,57 @@
     if (!scheduleData) return;
 
     const container = document.getElementById('history-content');
+    const vizContainer = document.getElementById('stack-viz');
     if (!container) return;
 
-    const done = scheduleData.watchlist
+    const doneItems = scheduleData.watchlist
+      .map((item, idx) => ({ ...item, idx }))
       .filter(i => i.status === 'done' && i.completedAt)
       .sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt));
 
-    if (done.length === 0) {
+    if (doneItems.length === 0) {
       container.innerHTML = '<div class="empty">まだ記録がありません</div>';
+      if (vizContainer) vizContainer.innerHTML = '';
       return;
+    }
+
+    // Render stacked bar visualization
+    if (vizContainer) {
+      const byType = {};
+      doneItems.forEach(item => {
+        const type = item.type || 'movie';
+        byType[type] = (byType[type] || 0) + 1;
+      });
+
+      const total = doneItems.length;
+      const categoryOrder = ['movie', 'anime', 'drama', 'game', 'book', 'manga', 'youtube'];
+      const typeLabels = { movie: '映画', anime: 'アニメ', drama: 'ドラマ', game: 'ゲーム', book: '本', manga: '漫画', youtube: 'YouTube' };
+
+      let barHtml = '<div class="stack-bar">';
+      categoryOrder.forEach(type => {
+        const count = byType[type] || 0;
+        if (count > 0) {
+          const pct = (count / total * 100).toFixed(1);
+          barHtml += `<div class="stack-segment ${type}" style="flex: ${count};" title="${typeLabels[type]}: ${count}">${count}</div>`;
+        }
+      });
+      barHtml += '</div>';
+
+      barHtml += '<div class="stack-legend">';
+      categoryOrder.forEach(type => {
+        const count = byType[type] || 0;
+        if (count > 0) {
+          barHtml += `<div class="stack-legend-item"><div class="stack-legend-color ${type}"></div>${MEDIA_EMOJI[type]} ${count}</div>`;
+        }
+      });
+      barHtml += '</div>';
+
+      vizContainer.innerHTML = barHtml;
     }
 
     // Group by date
     const grouped = {};
-    done.forEach(item => {
+    doneItems.forEach(item => {
       const date = formatDate(item.completedAt);
       if (!grouped[date]) grouped[date] = [];
       grouped[date].push(item);
@@ -390,6 +427,10 @@
                 <span class="history-item-title">${item.title}</span>
               </div>
               ${item.note ? `<div class="history-item-note">${item.note}</div>` : ''}
+              <div class="history-item-actions">
+                <button class="btn btn-sm" data-idx="${item.idx}" data-action="edit-history">✏️ メモ編集</button>
+                <button class="btn btn-sm" data-idx="${item.idx}" data-action="undo">↩️ 戻す</button>
+              </div>
             </div>
           `).join('')}
         </div>
@@ -397,6 +438,27 @@
     });
 
     container.innerHTML = html;
+
+    // Attach events
+    container.querySelectorAll('[data-action="undo"]').forEach(btn => {
+      btn.addEventListener('click', () => undoComplete(parseInt(btn.dataset.idx)));
+    });
+
+    container.querySelectorAll('[data-action="edit-history"]').forEach(btn => {
+      btn.addEventListener('click', () => openEditModal(parseInt(btn.dataset.idx)));
+    });
+  }
+
+  async function undoComplete(idx) {
+    const item = scheduleData.watchlist[idx];
+    if (!confirm(`「${item.title}」を見たいリストに戻しますか？`)) return;
+
+    item.status = 'want';
+    delete item.completedAt;
+
+    await saveData();
+    renderAll();
+    showToast('見たいリストに戻しました');
   }
 
   // All List
