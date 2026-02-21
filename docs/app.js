@@ -15,7 +15,7 @@
     book: '本', manga: '漫画', radio: 'ラジオ', tv: 'テレビ'
   };
 
-  const STATUS_EMOJI = { want: '👀', watching: '📺', done: '✓', hold: '⏸' };
+  const STATUS_EMOJI = { want: '☆', watching: '👀', done: '✓', hold: '⏸' };
   const DAY_NAMES = { mon: '月', tue: '火', wed: '水', thu: '木', fri: '金', sat: '土', sun: '日' };
   const DAY_ORDER = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
 
@@ -480,7 +480,7 @@
     if (watching.length > 0) {
       html += `
         <div class="priority-section">
-          <div class="section-title">📺 視聴中・優先</div>
+          <div class="section-title">👀 視聴中・優先</div>
           <div class="category-items" data-category="watching">
             ${watching.map((item, i) => renderBacklogItem(item, true, i, watching.length)).join('')}
           </div>
@@ -656,8 +656,8 @@
       <div class="form-group">
         <label class="form-label">ステータス</label>
         <select class="form-select" id="edit-status">
-          <option value="want" ${item.status === 'want' ? 'selected' : ''}>👀 見たい</option>
-          <option value="watching" ${item.status === 'watching' ? 'selected' : ''}>📺 視聴中</option>
+          <option value="want" ${item.status === 'want' ? 'selected' : ''}>☆ 見たい</option>
+          <option value="watching" ${item.status === 'watching' ? 'selected' : ''}>👀 視聴中</option>
           <option value="done" ${item.status === 'done' ? 'selected' : ''}>✓ 完了</option>
           <option value="hold" ${item.status === 'hold' ? 'selected' : ''}>⏸ 保留</option>
         </select>
