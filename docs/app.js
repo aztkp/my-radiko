@@ -112,7 +112,9 @@
           </div>
           <div class="crop-container">
             <img src="${dataUrl}" id="crop-image">
-            <div class="crop-box" id="crop-box"></div>
+            <div class="crop-box" id="crop-box">
+              <div class="crop-resize-handle" id="crop-resize"></div>
+            </div>
           </div>
           <div style="margin-top:12px;display:flex;gap:8px;">
             <button class="btn" id="crop-cancel-btn" style="flex:1;">キャンセル</button>
@@ -125,20 +127,23 @@
 
       const img = document.getElementById('crop-image');
       const cropBox = document.getElementById('crop-box');
+      const resizeHandle = document.getElementById('crop-resize');
       const container = img.parentElement;
       let cropX = 0, cropY = 0, cropSize = 0;
-      let imgOffsetX = 0, imgOffsetY = 0;
-      let isDragging = false;
-      let startX, startY, startCropX, startCropY;
+      let imgOffsetX = 0, imgOffsetY = 0, imgWidth = 0, imgHeight = 0;
+      let isDragging = false, isResizing = false;
+      let startX, startY, startCropX, startCropY, startSize;
 
       img.onload = () => {
         const imgRect = img.getBoundingClientRect();
         const containerRect = container.getBoundingClientRect();
         imgOffsetX = imgRect.left - containerRect.left;
         imgOffsetY = imgRect.top - containerRect.top;
-        cropSize = Math.min(imgRect.width, imgRect.height);
-        cropX = (imgRect.width - cropSize) / 2;
-        cropY = (imgRect.height - cropSize) / 2;
+        imgWidth = imgRect.width;
+        imgHeight = imgRect.height;
+        cropSize = Math.min(imgWidth, imgHeight) * 0.8;
+        cropX = (imgWidth - cropSize) / 2;
+        cropY = (imgHeight - cropSize) / 2;
         updateCropBox();
       };
 
@@ -149,7 +154,28 @@
         cropBox.style.top = (cropY + imgOffsetY) + 'px';
       }
 
+      // Resize handle events
+      resizeHandle.addEventListener('mousedown', (e) => {
+        isResizing = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        startSize = cropSize;
+        e.preventDefault();
+        e.stopPropagation();
+      });
+
+      resizeHandle.addEventListener('touchstart', (e) => {
+        isResizing = true;
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        startSize = cropSize;
+        e.preventDefault();
+        e.stopPropagation();
+      });
+
+      // Drag events
       cropBox.addEventListener('mousedown', (e) => {
+        if (isResizing) return;
         isDragging = true;
         startX = e.clientX;
         startY = e.clientY;
@@ -158,10 +184,8 @@
         e.preventDefault();
       });
 
-      document.addEventListener('mousemove', handleMove);
-      document.addEventListener('mouseup', () => isDragging = false);
-
       cropBox.addEventListener('touchstart', (e) => {
+        if (isResizing) return;
         isDragging = true;
         startX = e.touches[0].clientX;
         startY = e.touches[0].clientY;
@@ -170,23 +194,38 @@
         e.preventDefault();
       });
 
-      document.addEventListener('touchmove', handleMove);
-      document.addEventListener('touchend', () => isDragging = false);
-
       function handleMove(e) {
-        if (!isDragging) return;
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        const rect = img.getBoundingClientRect();
 
-        cropX = Math.max(0, Math.min(rect.width - cropSize, startCropX + (clientX - startX)));
-        cropY = Math.max(0, Math.min(rect.height - cropSize, startCropY + (clientY - startY)));
-        updateCropBox();
+        if (isResizing) {
+          const delta = Math.max(clientX - startX, clientY - startY);
+          const minSize = 50;
+          const maxSize = Math.min(imgWidth - cropX, imgHeight - cropY);
+          cropSize = Math.max(minSize, Math.min(maxSize, startSize + delta));
+          updateCropBox();
+        } else if (isDragging) {
+          cropX = Math.max(0, Math.min(imgWidth - cropSize, startCropX + (clientX - startX)));
+          cropY = Math.max(0, Math.min(imgHeight - cropSize, startCropY + (clientY - startY)));
+          updateCropBox();
+        }
       }
+
+      function handleEnd() {
+        isDragging = false;
+        isResizing = false;
+      }
+
+      document.addEventListener('mousemove', handleMove);
+      document.addEventListener('mouseup', handleEnd);
+      document.addEventListener('touchmove', handleMove);
+      document.addEventListener('touchend', handleEnd);
 
       function cleanup() {
         document.removeEventListener('mousemove', handleMove);
+        document.removeEventListener('mouseup', handleEnd);
         document.removeEventListener('touchmove', handleMove);
+        document.removeEventListener('touchend', handleEnd);
         modal.remove();
       }
 
@@ -194,9 +233,8 @@
       document.getElementById('crop-cancel-btn').onclick = () => { cleanup(); resolve(null); };
 
       document.getElementById('crop-confirm').onclick = () => {
-        const rect = img.getBoundingClientRect();
-        const scaleX = img.naturalWidth / rect.width;
-        const scaleY = img.naturalHeight / rect.height;
+        const scaleX = img.naturalWidth / imgWidth;
+        const scaleY = img.naturalHeight / imgHeight;
 
         const canvas = document.createElement('canvas');
         canvas.width = 400;
