@@ -928,14 +928,12 @@
     });
   }
 
-  // History
-  let historyViewMode = 'list';
-
-  function renderHistory() {
+  // Timeline View
+  function renderTimeline() {
     if (!scheduleData) return;
 
-    const container = document.getElementById('history-content');
-    const contribContainer = document.getElementById('history-contrib');
+    const container = document.getElementById('timeline-content');
+    const contribContainer = document.getElementById('timeline-contrib');
     if (!container) return;
 
     const doneItems = scheduleData.watchlist
@@ -977,61 +975,40 @@
       return;
     }
 
+    // Timeline view - grouped by date
+    const grouped = {};
+    doneItems.forEach(item => {
+      const date = formatDate(item.completedAt);
+      if (!grouped[date]) grouped[date] = [];
+      grouped[date].push(item);
+    });
+
     let html = '';
-
-    if (historyViewMode === 'shelf') {
-      // Shelf view - simple tile grid
-      html = `<div class="shelf-grid">
-        ${doneItems.map(item => `
-          <div class="shelf-item" data-idx="${item.idx}">
-            ${item.image
-              ? `<img class="shelf-cover" src="${item.image}" alt="${item.title}">`
-              : `<div class="shelf-cover shelf-placeholder">${mediaChip(item.type)}</div>`
-            }
-            <div class="shelf-title">${item.title}</div>
-          </div>
-        `).join('')}
-      </div>`;
-    } else {
-      // Timeline view - grouped by date
-      const grouped = {};
-      doneItems.forEach(item => {
-        const date = formatDate(item.completedAt);
-        if (!grouped[date]) grouped[date] = [];
-        grouped[date].push(item);
-      });
-
-      Object.entries(grouped).forEach(([date, items]) => {
-        html += `<div class="history-group">
-          <div class="history-date">${date}</div>
-          <div class="history-items">
-            ${items.map(item => `
-              <div class="history-item">
-                ${item.image ? `<img src="${item.image}" class="history-item-img">` : ''}
-                <div class="history-item-body">
-                  <div class="history-item-header">
-                    ${mediaChip(item.type, false)}
-                    <span class="history-item-title">${item.title}</span>
-                  </div>
-                  ${item.note ? `<div class="history-item-note">${item.note}</div>` : ''}
+    Object.entries(grouped).forEach(([date, items]) => {
+      html += `<div class="history-group">
+        <div class="history-date">${date}</div>
+        <div class="history-items">
+          ${items.map(item => `
+            <div class="history-item">
+              ${item.image ? `<img src="${item.image}" class="history-item-img">` : ''}
+              <div class="history-item-body">
+                <div class="history-item-header">
+                  ${mediaChip(item.type, false)}
+                  <span class="history-item-title">${item.title}</span>
                 </div>
-                <div class="history-item-actions">
-                  <button class="btn btn-sm" data-idx="${item.idx}" data-action="edit-history">✏️</button>
-                  <button class="btn btn-sm btn-danger" data-idx="${item.idx}" data-action="delete-history">🗑️</button>
-                </div>
+                ${item.note ? `<div class="history-item-note">${item.note}</div>` : ''}
               </div>
-            `).join('')}
-          </div>
-        </div>`;
-      });
-    }
+              <div class="history-item-actions">
+                <button class="btn btn-sm" data-idx="${item.idx}" data-action="edit-history">✏️</button>
+                <button class="btn btn-sm btn-danger" data-idx="${item.idx}" data-action="delete-history">🗑️</button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>`;
+    });
 
     container.innerHTML = html;
-
-    // Attach events
-    container.querySelectorAll('.shelf-item').forEach(item => {
-      item.addEventListener('click', () => openEditModal(parseInt(item.dataset.idx)));
-    });
 
     container.querySelectorAll('[data-action="edit-history"]').forEach(btn => {
       btn.addEventListener('click', () => openEditModal(parseInt(btn.dataset.idx)));
@@ -1040,6 +1017,84 @@
     container.querySelectorAll('[data-action="delete-history"]').forEach(btn => {
       btn.addEventListener('click', () => deleteHistoryItem(parseInt(btn.dataset.idx)));
     });
+  }
+
+  // Shelf View
+  function renderShelf() {
+    if (!scheduleData) return;
+
+    const container = document.getElementById('shelf-content');
+    if (!container) return;
+
+    const doneItems = scheduleData.watchlist
+      .map((item, idx) => ({ ...item, idx }))
+      .filter(i => i.status === 'done')
+      .sort((a, b) => new Date(b.completedAt || 0) - new Date(a.completedAt || 0));
+
+    if (doneItems.length === 0) {
+      container.innerHTML = '<div class="empty">まだ記録がありません</div>';
+      return;
+    }
+
+    container.innerHTML = `<div class="shelf-grid">
+      ${doneItems.map(item => `
+        <div class="shelf-item" data-idx="${item.idx}">
+          ${item.image
+            ? `<img class="shelf-cover" src="${item.image}" alt="${item.title}">`
+            : `<div class="shelf-cover shelf-placeholder">${mediaChip(item.type)}</div>`
+          }
+          <div class="shelf-title">${item.title}</div>
+        </div>
+      `).join('')}
+    </div>`;
+
+    container.querySelectorAll('.shelf-item').forEach(item => {
+      item.addEventListener('click', () => openEditModal(parseInt(item.dataset.idx)));
+    });
+  }
+
+  // Gacha
+  function runGacha() {
+    if (!scheduleData) return;
+
+    const wantItems = scheduleData.watchlist
+      .map((item, idx) => ({ ...item, idx }))
+      .filter(i => i.status === 'want' || i.status === 'watching');
+
+    const resultEl = document.getElementById('gacha-result');
+    if (!resultEl) return;
+
+    if (wantItems.length === 0) {
+      resultEl.innerHTML = '<div class="empty">見たいリストにアイテムがありません</div>';
+      return;
+    }
+
+    // Show spinning animation
+    resultEl.innerHTML = '<div class="gacha-spinning">🎰</div>';
+
+    setTimeout(() => {
+      const selected = wantItems[Math.floor(Math.random() * wantItems.length)];
+      resultEl.innerHTML = `
+        <div class="gacha-item">
+          <div class="gacha-item-type">${mediaChip(selected.type)}</div>
+          <div class="gacha-item-title">${selected.title}</div>
+          ${selected.note ? `<div style="color:var(--text-secondary);font-size:13px;">${selected.note}</div>` : ''}
+          <div class="gacha-item-actions">
+            <button class="btn" id="gacha-reroll">もう一回</button>
+            <button class="btn btn-primary" id="gacha-start" data-idx="${selected.idx}">視聴開始</button>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('gacha-reroll')?.addEventListener('click', runGacha);
+      document.getElementById('gacha-start')?.addEventListener('click', async () => {
+        const idx = parseInt(document.getElementById('gacha-start').dataset.idx);
+        scheduleData.watchlist[idx].status = 'watching';
+        await saveData();
+        renderAll();
+        showToast('視聴開始しました！');
+      });
+    }, 500);
   }
 
   async function deleteHistoryItem(idx) {
@@ -1152,7 +1207,8 @@
     renderWeeklyCalendar();
     renderStats();
     renderBacklog();
-    renderHistory();
+    renderTimeline();
+    renderShelf();
     renderAllList();
   }
 
@@ -1179,20 +1235,8 @@
       });
     });
 
-    // History view toggle
-    document.getElementById('btn-view-list')?.addEventListener('click', () => {
-      historyViewMode = 'list';
-      document.getElementById('btn-view-list').classList.add('active');
-      document.getElementById('btn-view-shelf').classList.remove('active');
-      renderHistory();
-    });
-
-    document.getElementById('btn-view-shelf')?.addEventListener('click', () => {
-      historyViewMode = 'shelf';
-      document.getElementById('btn-view-shelf').classList.add('active');
-      document.getElementById('btn-view-list').classList.remove('active');
-      renderHistory();
-    });
+    // Gacha
+    document.getElementById('btn-gacha')?.addEventListener('click', runGacha);
 
     // Quick add
     document.getElementById('quick-add-btn')?.addEventListener('click', quickAdd);
