@@ -17,7 +17,7 @@
 
   const STATUS_EMOJI = { want: '☆', watching: '👀', done: '✓', hold: '⏸' };
   const DAY_NAMES = { mon: '月', tue: '火', wed: '水', thu: '木', fri: '金', sat: '土', sun: '日' };
-  const DAY_ORDER = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+  const DAY_ORDER = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 
   let scheduleData = null;
   let scheduleSha = null;
@@ -333,7 +333,7 @@
 
       html += `<div class="day-card ${isToday ? 'today' : ''}">
         <div class="day-card-header">
-          ${DAY_NAMES[day]}${isToday ? ' (今日)' : ''}
+          ${DAY_NAMES[day]}
           ${editingWeekly ? `<button class="day-add-btn" data-day="${day}" title="追加">+</button>` : ''}
         </div>
         ${shows.length === 0 ? '<div class="day-empty">-</div>' : ''}
