@@ -146,7 +146,9 @@
     {
       "title": "イカゲーム",
       "type": "drama",
-      "status": "want"
+      "status": "want",
+      "episodes": 9,
+      "currentEpisode": 1
     },
     {
       "title": "VIVANT",
