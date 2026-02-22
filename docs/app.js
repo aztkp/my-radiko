@@ -961,7 +961,7 @@
           const items = byType[type] || [];
           if (items.length === 0) return;
           contribHtml += `<div class="contrib-row-compact">
-            ${mediaChip(type, false)}
+            <div class="contrib-label-compact">${mediaChip(type)}</div>
             <div class="contrib-squares-compact">
               ${items.map(() => `<div class="contrib-square-sm ${type}"></div>`).join('')}
             </div>
