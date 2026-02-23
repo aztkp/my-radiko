@@ -717,9 +717,11 @@
 
     return `
       <div class="backlog-item ${isWatching ? 'watching' : ''}">
+        ${item.image ? `<img src="${item.image}" class="backlog-item-img">` : `
         <button class="backlog-item-status" data-idx="${item.idx}" title="ステータス変更">
           ${STATUS_EMOJI[item.status] || '👀'}
         </button>
+        `}
         <div class="backlog-item-content">
           <div class="backlog-item-title">${item.title}</div>
           <div class="backlog-item-meta">
