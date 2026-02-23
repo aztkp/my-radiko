@@ -369,16 +369,5 @@
       "addedAt": "2026-02-23T14:05:19.068Z"
     }
   ],
-  "challenges": [
-    {
-      "type": "monthly",
-      "target": 50,
-      "mediaType": null,
-      "title": "2月に50本完了する",
-      "createdAt": "2026-02-23T12:58:04.339Z",
-      "month": 1,
-      "year": 2026,
-      "completed": false
-    }
-  ]
+  "challenges": []
 }
