@@ -711,28 +711,61 @@
     });
   }
 
-  async function incrementProgress(idx) {
+  function incrementProgress(idx) {
     const item = scheduleData.watchlist[idx];
     if (!item.episodes) return;
 
     const newEpisode = Math.min((item.currentEpisode || 0) + 1, item.episodes);
-    item.currentEpisode = newEpisode;
+    const isComplete = newEpisode >= item.episodes;
 
-    // Record episode history
-    if (!item.episodeHistory) item.episodeHistory = [];
-    item.episodeHistory.push({
-      episode: newEpisode,
-      watchedAt: new Date().toISOString()
+    // Show modal for episode note
+    const modal = document.getElementById('edit-modal');
+    const content = document.getElementById('modal-content');
+
+    content.innerHTML = `
+      <div class="episode-record-header">
+        <span class="episode-record-title">${item.title}</span>
+        <span class="episode-record-num">第${newEpisode}話${isComplete ? ' (最終話)' : ''}</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">メモ（任意）</label>
+        <textarea class="form-textarea" id="episode-note" placeholder="感想やメモを入力..."></textarea>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <button class="btn" id="episode-skip" style="flex:1;">スキップ</button>
+        <button class="btn btn-primary" id="episode-save" style="flex:1;">記録</button>
+      </div>
+    `;
+
+    modal.classList.add('show');
+
+    const saveEpisode = async (note) => {
+      item.currentEpisode = newEpisode;
+
+      // Record episode history
+      if (!item.episodeHistory) item.episodeHistory = [];
+      item.episodeHistory.push({
+        episode: newEpisode,
+        watchedAt: new Date().toISOString(),
+        note: note || undefined
+      });
+
+      if (isComplete) {
+        item.status = 'done';
+        item.completedAt = new Date().toISOString();
+        showToast(`「${item.title}」完了！`);
+      }
+
+      await saveData();
+      modal.classList.remove('show');
+      renderAll();
+    };
+
+    document.getElementById('episode-skip').addEventListener('click', () => saveEpisode(''));
+    document.getElementById('episode-save').addEventListener('click', () => {
+      const note = document.getElementById('episode-note').value.trim();
+      saveEpisode(note);
     });
-
-    if (item.currentEpisode >= item.episodes) {
-      item.status = 'done';
-      item.completedAt = new Date().toISOString();
-      showToast(`「${item.title}」完了！`);
-    }
-
-    await saveData();
-    renderAll();
   }
 
   async function moveItem(idx, direction) {
@@ -955,6 +988,7 @@
             idx,
             isEpisode: true,
             episodeNum: ep.episode,
+            episodeNote: ep.note,
             completedAt: ep.watchedAt,
             displayTitle: `${item.title} 第${ep.episode}話`
           });
@@ -1035,6 +1069,7 @@
                   ${mediaChip(item.type, false)}
                   <span class="history-item-title">${item.displayTitle || item.title}</span>
                 </div>
+                ${item.isEpisode && item.episodeNote ? `<div class="history-item-note">${item.episodeNote}</div>` : ''}
                 ${item.note && !item.isEpisode ? `<div class="history-item-note">${item.note}</div>` : ''}
               </div>
               ${!item.isEpisode ? `
