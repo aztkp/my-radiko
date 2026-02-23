@@ -103,13 +103,13 @@
         "image": "https://raw.githubusercontent.com/aztkp/media-log/main/images/1771844601105.jpg"
       },
       {
+        "name": "ザ・ノンフィクション",
+        "type": "tv"
+      },
+      {
         "name": "ニューヨークのニューラジオ",
         "type": "radio",
         "image": "https://raw.githubusercontent.com/aztkp/media-log/main/images/1771829211270.jpg"
-      },
-      {
-        "name": "ザ・ノンフィクション",
-        "type": "tv"
       }
     ]
   },
