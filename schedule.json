@@ -308,6 +308,13 @@
       "type": "book",
       "status": "want",
       "addedAt": "2026-02-23T09:56:46.015Z"
+    },
+    {
+      "title": "永田敬介の絶望ラジオ",
+      "type": "radio",
+      "status": "done",
+      "completedAt": "2026-02-23T11:03:30.814Z",
+      "image": "https://raw.githubusercontent.com/aztkp/media-log/main/images/1771844601105.jpg"
     }
   ]
 }
