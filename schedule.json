@@ -35,7 +35,8 @@
       },
       {
         "name": "テレビ千鳥",
-        "type": "tv"
+        "type": "tv",
+        "image": "https://raw.githubusercontent.com/aztkp/media-log/main/images/1771903075185.jpg"
       },
       {
         "name": "愛のハイエナ",
