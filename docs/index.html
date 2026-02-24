@@ -354,6 +354,16 @@
       flex-shrink: 0;
     }
 
+    .backlog-item-img.clickable {
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .backlog-item-img.clickable:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 0 3px var(--accent);
+    }
+
     .backlog-item-content { flex: 1; min-width: 0; }
 
     .backlog-item-title {

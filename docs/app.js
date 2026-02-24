@@ -728,7 +728,7 @@
 
     return `
       <div class="backlog-item ${isWatching ? 'watching' : ''}">
-        ${item.image ? `<img src="${item.image}" class="backlog-item-img">` : `
+        ${item.image ? `<img src="${item.image}" class="backlog-item-img ${isWatching ? 'clickable' : ''}" ${isWatching ? `data-idx="${item.idx}" data-action="complete"` : ''} title="${isWatching ? 'クリックで完了' : ''}">` : `
         <button class="backlog-item-status" data-idx="${item.idx}" title="ステータス変更">
           ${STATUS_EMOJI[item.status] || '👀'}
         </button>
@@ -776,6 +776,19 @@
     container.querySelectorAll('[data-action="move-down"]').forEach(btn => {
       btn.addEventListener('click', () => moveItem(parseInt(btn.dataset.idx), 'down'));
     });
+
+    container.querySelectorAll('[data-action="complete"]').forEach(img => {
+      img.addEventListener('click', () => completeItem(parseInt(img.dataset.idx)));
+    });
+  }
+
+  async function completeItem(idx) {
+    const item = scheduleData.watchlist[idx];
+    item.status = 'done';
+    item.completedAt = new Date().toISOString();
+    await saveData();
+    renderAll();
+    showToast(`「${item.title}」完了！`);
   }
 
   function incrementProgress(idx) {
