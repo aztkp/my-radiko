@@ -71,7 +71,8 @@
       },
       {
         "name": "New Music Wednesday",
-        "type": "radio"
+        "type": "radio",
+        "image": "https://raw.githubusercontent.com/aztkp/media-log/main/images/1771902117315.jpg"
       }
     ],
     "thu": [
