@@ -68,13 +68,13 @@
         "type": "tv"
       },
       {
-        "name": "有吉の壁",
-        "type": "tv"
-      },
-      {
         "name": "New Music Wednesday",
         "type": "radio",
         "image": "https://raw.githubusercontent.com/aztkp/media-log/main/images/1771902117315.jpg"
+      },
+      {
+        "name": "有吉の壁",
+        "type": "tv"
       },
       {
         "name": "水曜日のダウンタウン",
