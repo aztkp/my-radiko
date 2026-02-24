@@ -533,10 +533,11 @@
     {
       "title": "ダウ90000 第2回・第6回演劇公演「旅館じゃないんだからさ」",
       "type": "comedy",
-      "status": "watching",
+      "status": "done",
       "addedAt": "2026-02-24T10:24:34.915Z",
       "note": "映画はだめだけどなんで音楽は聴けるんだ\n京都に行って信玄餅を買ってくる男\n人のサブスクを観る",
-      "image": "https://raw.githubusercontent.com/aztkp/media-log/main/images/1771928903460.jpg"
+      "image": "https://raw.githubusercontent.com/aztkp/media-log/main/images/1771928903460.jpg",
+      "completedAt": "2026-02-24T12:27:47.385Z"
     }
   ],
   "challenges": []
