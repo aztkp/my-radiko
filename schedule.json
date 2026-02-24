@@ -68,6 +68,10 @@
       {
         "name": "水曜日のダウンタウン",
         "type": "tv"
+      },
+      {
+        "name": "New Music Wednesday",
+        "type": "radio"
       }
     ],
     "thu": [
