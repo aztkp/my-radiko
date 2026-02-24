@@ -367,6 +367,7 @@
   function renderWeeklyCalendar() {
     const container = document.getElementById('weekly-calendar');
     if (!container) return;
+    container.classList.toggle('editing', editingWeekly);
     const today = getTodayDayKey();
 
     let html = '';

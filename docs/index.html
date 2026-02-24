@@ -147,8 +147,13 @@
       overflow-x: auto;
     }
 
+    .weekly-calendar.editing {
+      grid-template-columns: repeat(7, minmax(180px, 1fr));
+    }
+
     @media (max-width: 900px) {
       .weekly-calendar { grid-template-columns: repeat(7, 120px); }
+      .weekly-calendar.editing { grid-template-columns: repeat(7, 180px); }
     }
 
     .day-card {
@@ -157,6 +162,10 @@
       padding: 12px;
       min-height: 100px;
       min-width: 120px;
+    }
+
+    .weekly-calendar.editing .day-card {
+      min-width: 180px;
     }
 
     .day-card.today {
