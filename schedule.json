@@ -67,6 +67,11 @@
         "type": "radio",
         "image": "https://raw.githubusercontent.com/aztkp/media-log/main/images/1771903494869.jpg",
         "url": "https://radiko.jp/r_seasons/1015"
+      },
+      {
+        "name": "相席食堂",
+        "type": "tv",
+        "url": "https://tver.jp/series/sr5jhs5zky"
       }
     ],
     "wed": [
