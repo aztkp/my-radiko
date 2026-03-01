@@ -640,6 +640,14 @@
       "type": "youtube",
       "status": "want",
       "addedAt": "2026-03-01T15:51:00.932Z"
+    },
+    {
+      "title": "相席食堂 M-1王者たくろう地元で凱旋相席！",
+      "type": "tv",
+      "status": "done",
+      "completedAt": "2026-03-01T16:02:18.451Z",
+      "image": "https://raw.githubusercontent.com/aztkp/media-log/main/images/1772380913623.jpg",
+      "note": "座王グセ"
     }
   ],
   "challenges": []
