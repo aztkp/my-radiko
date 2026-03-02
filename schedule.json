@@ -654,6 +654,14 @@
       "type": "anime",
       "status": "want",
       "addedAt": "2026-03-02T05:14:56.327Z"
+    },
+    {
+      "title": "ハライチのターン! 2月26日",
+      "type": "radio",
+      "status": "done",
+      "completedAt": "2026-03-02T07:09:23.773Z",
+      "image": "https://raw.githubusercontent.com/aztkp/media-log/main/images/1771904300644.jpg",
+      "note": "マツモトクラブの挨拶"
     }
   ],
   "challenges": []
