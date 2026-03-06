@@ -733,6 +733,14 @@
       "type": "book",
       "status": "want",
       "addedAt": "2026-03-06T08:24:52.095Z"
+    },
+    {
+      "title": "ニューヨークのニューラジオ 2026.3.1",
+      "type": "radio",
+      "status": "done",
+      "completedAt": "2026-03-06T08:26:29.919Z",
+      "image": "https://raw.githubusercontent.com/aztkp/media-log/main/images/1771829211270.jpg",
+      "note": "何歳になっても結局後から考えると若い"
     }
   ],
   "challenges": []
