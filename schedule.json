@@ -294,7 +294,10 @@
     {
       "title": "スキップとローファー",
       "type": "anime",
-      "status": "watching"
+      "status": "watching",
+      "image": "https://raw.githubusercontent.com/aztkp/media-log/main/images/1772860528229.jpg",
+      "episodes": 12,
+      "currentEpisode": 2
     },
     {
       "title": "かぐや様",
