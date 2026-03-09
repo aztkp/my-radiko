@@ -810,12 +810,17 @@
       "note": "色んな色の異なる球",
       "image": "https://raw.githubusercontent.com/aztkp/media-log/main/images/1772965147195.jpg",
       "episodes": 6,
-      "currentEpisode": 1,
+      "currentEpisode": 2,
       "episodeHistory": [
         {
           "episode": 1,
           "watchedAt": "2026-03-08T10:34:57.098Z",
           "note": "色んな色の異なる球"
+        },
+        {
+          "episode": 2,
+          "watchedAt": "2026-03-09T06:55:50.477Z",
+          "note": "5000円は駄目だけど2000円ならわかる\n海賊みたいな食べ方、大人不在"
         }
       ]
     }
