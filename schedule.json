@@ -309,7 +309,7 @@
       "status": "watching",
       "image": "https://raw.githubusercontent.com/aztkp/media-log/main/images/1772860528229.jpg",
       "episodes": 12,
-      "currentEpisode": 4,
+      "currentEpisode": 5,
       "episodeHistory": [
         {
           "episode": 3,
@@ -320,6 +320,11 @@
           "episode": 4,
           "watchedAt": "2026-03-09T17:03:45.846Z",
           "note": "何を無駄と思うか、3回に1回断る"
+        },
+        {
+          "episode": 5,
+          "watchedAt": "2026-03-09T17:17:23.205Z",
+          "note": "努力したミカから見たミツミ"
         }
       ]
     },
