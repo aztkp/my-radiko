@@ -231,7 +231,8 @@
       {
         "name": "黒帯会議",
         "type": "radio",
-        "url": "https://www.youtube.com/@kuroobikaigi"
+        "url": "https://www.youtube.com/@kuroobikaigi",
+        "image": "https://raw.githubusercontent.com/aztkp/media-log/main/images/1773045413118.jpg"
       }
     ]
   },
