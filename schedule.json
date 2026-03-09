@@ -309,7 +309,14 @@
       "status": "watching",
       "image": "https://raw.githubusercontent.com/aztkp/media-log/main/images/1772860528229.jpg",
       "episodes": 12,
-      "currentEpisode": 2
+      "currentEpisode": 3,
+      "episodeHistory": [
+        {
+          "episode": 3,
+          "watchedAt": "2026-03-09T16:44:40.498Z",
+          "note": "ハチ公は待ち合わせスポットの割に分かりづらい、言いたいだけ"
+        }
+      ]
     },
     {
       "title": "かぐや様",
