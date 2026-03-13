@@ -462,8 +462,9 @@
     {
       "title": "置き配的",
       "type": "book",
-      "status": "watching",
-      "image": "https://raw.githubusercontent.com/aztkp/media-log/main/images/1773415264701.jpg"
+      "status": "done",
+      "image": "https://raw.githubusercontent.com/aztkp/media-log/main/images/1773415264701.jpg",
+      "completedAt": "2026-03-13T20:26:07.236Z"
     },
     {
       "title": "冬のなんかさ、春のなんかね",
