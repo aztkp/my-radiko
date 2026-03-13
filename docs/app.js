@@ -44,6 +44,18 @@
   function getToken() { return localStorage.getItem(STORAGE_KEY) || ''; }
   function setToken(t) { localStorage.setItem(STORAGE_KEY, t); }
 
+  // Get unique thumbnails from youtube items
+  function getYoutubeThumbnails() {
+    if (!scheduleData || !scheduleData.watchlist) return [];
+    const urls = new Set();
+    scheduleData.watchlist.forEach(item => {
+      if (item.type === 'youtube' && item.image) {
+        urls.add(item.image);
+      }
+    });
+    return Array.from(urls);
+  }
+
   async function handleImageUpload(file, previewEl, inputEl) {
     const token = getToken();
     if (!token) {
@@ -948,6 +960,18 @@
           <input type="hidden" id="edit-image" value="${item.image || ''}">
         </div>
         ${item.image ? '<button type="button" class="btn btn-sm" id="remove-image" style="margin-top:6px">画像を削除</button>' : ''}
+        ${item.type === 'youtube' ? (() => {
+          const thumbs = getYoutubeThumbnails().filter(url => url !== item.image);
+          if (thumbs.length === 0) return '';
+          return `
+            <div class="past-thumbnails">
+              <div class="past-thumbnails-label">過去のサムネイルから選択</div>
+              <div class="past-thumbnails-grid">
+                ${thumbs.map(url => `<img src="${url}" class="past-thumbnail" data-url="${url}">`).join('')}
+              </div>
+            </div>
+          `;
+        })() : ''}
       </div>
       <div class="form-group">
         <label class="form-label">メモ</label>
@@ -998,6 +1022,23 @@
     document.getElementById('remove-image')?.addEventListener('click', () => {
       imageInput.value = '';
       imagePreview.outerHTML = '<div class="image-placeholder" id="image-preview">クリックまたはドロップで画像を追加</div>';
+    });
+
+    // Past thumbnail selection
+    document.querySelectorAll('.past-thumbnail').forEach(thumb => {
+      thumb.addEventListener('click', () => {
+        const url = thumb.dataset.url;
+        imageInput.value = url;
+        const preview = document.getElementById('image-preview');
+        if (preview.tagName === 'IMG') {
+          preview.src = url;
+        } else {
+          preview.outerHTML = `<img src="${url}" class="image-preview" id="image-preview">`;
+        }
+        // Highlight selected thumbnail
+        document.querySelectorAll('.past-thumbnail').forEach(t => t.classList.remove('selected'));
+        thumb.classList.add('selected');
+      });
     });
 
     document.getElementById('edit-status').addEventListener('change', (e) => {
